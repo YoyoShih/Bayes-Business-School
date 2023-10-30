@@ -1,0 +1,144 @@
+---
+Main code to analyze the Dow Jones Industrial Average
+---
+# General Setting
+
+```{r}
+# install.packages("ggplot2")
+library(ggplot2)
+```
+
+# Data Preparation
+## grab from Yahoo! Finance
+
+1. install and import relative packages
+```{r}
+# install.packages("quantmod")
+# install.packages("TTR")
+library("TTR")
+library("quantmod")
+```
+
+2. use 'getSymbols' to grab data
+  Symbols: first parameter, specify the stock code
+  src: specify the source
+  from/to: specify the required period
+  auto.assign: *False* for return the result
+```{r}
+df.DJI <- getSymbols("^DJI",
+                     src = "yahoo",
+                     from = "2016-01-01",
+                     to = "2022-12-31",
+                     auto.assign = FALSE)
+summary(df.DJI)
+```
+3. extract the closing prices and take logarithm. Then, get the increment
+```{r}
+x.n <- df.DJI$DJI.Close
+y.n <- log(x.n)
+z.n <- diff(y.n)
+summary(z.n)
+```
+
+# Data Cleaning
+
+1. install and import relative packages
+```{r}
+# install.packages("e1071")
+library(e1071)
+```
+
+y.n: from y_0 to y_1762
+z.n: z_1 = y_1 - y_0, and so on
+```{r, fig.height=10, fig.width=10}
+df.z.n <- as.data.frame(z.n)
+df.z.n$time <- 1:nrow(z.n)
+df.z.n <- df.z.n[-1,]
+mean.z <- mean(df.z.n$DJI.Close)
+var.z <- var(df.z.n$DJI.Close)
+quartile1 <- quantile(df.z.n$DJI.Close)[2]
+quartile2 <- quantile(df.z.n$DJI.Close)[3]
+quartile3 <- quantile(df.z.n$DJI.Close)[4]
+IQR <-  quartile3 - quartile1
+ggplot(df.z.n, aes(x = time, y = DJI.Close)) +
+  geom_line(data = subset(df.z.n, time < 999 | time > 1503), color ="grey60") +
+  geom_line(data = subset(df.z.n, time >= 999 & time <= 1503), color ="grey20") +
+  geom_abline(
+    intercept = c(mean.z - 3 * IQR, mean.z - 1.5 * IQR, mean.z + 1.5 * IQR, mean.z + 3 * IQR),
+    slope = 0,
+    linetype = c("dashed", "dashed", "dashed", "dashed"),
+    color = c("darkblue", "darkred", "darkred", "darkblue")
+  )
+```
+remove outliers
+```{r}
+# remove outliers
+
+# mean.cleanz <- mean()
+# var.cleanz <- var()
+# skew.cleanz <- skewness()
+# kurt.cleanz <- kurtosis() -3
+```
+
+# Standard Test of Normality
+## Kolmogorov-Smirnov test and Anderson-Darling test
+
+```{r}
+
+```
+
+# Investigation of Normality by Resampling
+
+```{r}
+
+```
+
+# Investigation of Constant Mean
+
+```{r}
+
+```
+
+# Investigation of Constant Variance
+
+```{r}
+
+```
+
+# Investigation of Independence
+
+```{r}
+
+```
+
+# Real Returns
+
+1. install and import relative packages
+```{r}
+# install.packages("rvest")
+library(rvest)
+```
+
+2. data preparation
+```{r}
+url <- "https://www.rateinflation.com/consumer-price-index/usa-historical-cpi?start=1&end=100"
+webpage <- read_html(url)
+cpi.data <- webpage %>%
+  html_table() %>%
+  data.frame()
+rownames(cpi.data) <- cpi.data$Year
+cpi.data <- cpi.data[, -1]
+select.cpi.data <- cpi.data[9:2,]
+```
+
+```{r}
+# real.DJI <- 
+y.t.n <- log(real.DJI)
+z.t.n <- diff(y.t.n)
+```
+
+3. Tests and Confidence Intervals
+```{r}
+
+```
+
